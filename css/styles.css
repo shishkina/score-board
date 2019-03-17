@@ -1,0 +1,26 @@
+.carousel__view {
+  position: relative;
+  width: 100%;
+  margin-top: 5%;
+  display: flex;
+  flex-wrap: nowrap;
+
+  /* overflow: hidden; */
+}
+.carousel__view > #scores__list {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+#scores__list > .card_container {
+  background-color: #f1f1f1;
+}
+
+.score-block div {
+  display: inline;
+}
+
+.team-name, .team-score {
+  margin: 5%;
+}
