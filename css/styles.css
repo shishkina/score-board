@@ -1,26 +1,61 @@
-.carousel__view {
+#scores__wrapper {
+  box-sizing: border-box;
+  font-family: Sintony,Arial,sans-serif;
   position: relative;
+  user-select: none;
   width: 100%;
-  margin-top: 5%;
-  display: flex;
-  flex-wrap: nowrap;
-
-  /* overflow: hidden; */
 }
-.carousel__view > #scores__list {
-  display: flex;
+
+.scores__list {
+  display flex;
   justify-content: space-around;
-  width: 100%;
+  overflow-y: hidden;
+  overflow-x: scroll;
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-#scores__list > .card_container {
-  background-color: #f1f1f1;
+.scores__list-item {
+  border-right: 1px solid #d2d2d2;
+  box-sizing: border-box;
+  display: inline-block;
+  max-width: 190px;
+  min-width: 190px;
+  margin: 0;
+  padding: 0;
 }
 
-.score-block div {
+.scores__panel {
   display: inline;
+  height: 100%;
+  border-bottom-width: 4px;
+  border-right-width: 0;
+  padding-top: 24px;
+  padding-bottom: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .team-name, .team-score {
-  margin: 5%;
+  width: 50%;
+  display: inline;
+  margin: 5px;
+}
+
+.team-name {
+  width: 65px;
+  display: inline-block;
+  vertical-align: middle;
+  font-weight: 700;
+}
+
+.scores__status-state {
+  vertical-align: middle;
+  display: inline;
+  text-transform: uppercase;
+  height: 100%;
+  margin: 0 0 8px;
+  box-sizing: inherit;
 }

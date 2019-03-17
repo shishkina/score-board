@@ -10,7 +10,7 @@ window.onload = () => {
       this.isLive = false;
       this.shouldUpdateData = false;
     }
-    // set date to yesterday intially to see scores of past games, then reset if the date changes or if the any game is live
+    // set date to yesterday intially to see scores of past games, then reset if the date changes or if any game is live
     getFormattedDate = () => {
       const today = new Date();
       const dd = this.formatDate(today.getDate()) - 1;
@@ -75,7 +75,7 @@ window.onload = () => {
         });
       }
       this.gamesData = storageData;
-      this.cardsArray = this.makeScoreCards()
+      this.cardsArray = this.makeScoreCards();
     }
 
     getData = async () => {
@@ -87,28 +87,24 @@ window.onload = () => {
     makeScoreCards = () => {
       return this.gamesData && this.gamesData.map(game => {
         const card = new ScoreCard(game);
-
-        const cardTeams = Object.keys(game.teams)
-        cardTeams.forEach(async (team) => {
-          await card.setTeamData(team, game.teams[team])
-        })
-          return card
+        return card
       });
     }
 
     renderScoreCards = () => {
-      const container = document.getElementById('scores__list')
+      const container = document.getElementById('scores__wrapper')
+      const ul = document.createElement('ul');
+      ul.className = 'scores__list';
+      container.appendChild(ul)
       this.cardsArray.map(card => {
         const el = card.createCardElement()
-        container.appendChild(el)
+        ul.appendChild(el)
       })
     }
   }
   const app = new App();
   app.getInitialData();
-  console.log(app, 'this is app');
-  app.renderScoreCards()
-
+  app.renderScoreCards();
   setInterval(() => {
     app.updateDate();
     app.updateData();
