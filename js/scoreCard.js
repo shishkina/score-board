@@ -5,7 +5,10 @@ class Widget {
       link,
       gameData: {
         status: { abstractGameState },
-        datetime: { dateTime },
+        datetime: {
+          dateTime,
+          endDateTime,
+        },
       },
       liveData: {
         linescore: {
@@ -23,17 +26,38 @@ class Widget {
     this.timeRemaining = currentPeriodTimeRemaining;
     this.period = currentPeriodOrdinal;
     this.startDateTime = dateTime;
+    this.endDateTime = endDateTime;
+
+    this.updateWidgetData = this.updateWidgetData.bind(this);
+    this.pollGameData = this.pollGameData.bind(this);
+    setTimeout(this.pollGameData, this.getNextPollTime());
   }
 
-  async updateWidgetData () {
+  pollGameData () {
+    while (!this.endDateTime) {
+      this.interval = setInterval(this.updateWidgetData, 3000);
+    }
+    clearInterval(this.interval);
+  }
+
+  getNextPollTime () {
+    const gameStartTime = new Date(this.startDateTime);
+    const timeNow = new Date();
+    const timeoutInMilliseconds = gameStartTime.getTime() - timeNow.getTime();
+    return timeoutInMilliseconds;
+  }
+
+  updateWidgetData = async () => {
     const node = document.getElementById(this.id);
-    const updatedGameData = await this.getUpdatedGameData()
-    const updatedWidget = new Widget(updatedGameData)
-
-    node.parentNode.replaceChild(node, updatedWidget.render());
+    const updatedGameData = await this.getUpdatedGameData();
+    const updatedWidget = new Widget(updatedGameData);
+    // render method returns a string, need to parse it into a DOM node to successfully replace existing node
+    let doc = new DOMParser().parseFromString(updatedWidget.render(), 'text/html');
+    node && node.parentNode.replaceChild(doc.body.firstChild, node);
+    debugger
   }
 
-  async getUpdatedGameData () {
+  getUpdatedGameData = async () => {
     const res = await fetch(this.link);
     return await res.json();
   }
@@ -65,7 +89,6 @@ class Widget {
   render () {
     const homeTeamContainer = this.getTeamScoreTempate(this.teams.home);
     const awayTeamContainer = this.getTeamScoreTempate(this.teams.away);
-
     return `
       <li class="scores__list-item" id=${this.id}>
         <div class="scores__panel">
