@@ -6,10 +6,8 @@ window.onload = () => {
       this.baseUrl = 'http://statsapi.web.nhl.com';
     }
 
-
     renderGames (game) {
       const widget = new Widget(game);
-      console.log(widget);
       return widget.render();
     }
 
@@ -18,10 +16,9 @@ window.onload = () => {
 
       const gamesData = localStorage.getItem('all-games-array');
       let parsedGamesData = JSON.parse(gamesData);
-
       const lastDataUpdate = localStorage.getItem('last-update');
       const shouldUpdate = this.getFormattedDate() !== lastDataUpdate;
-
+      const date = this.getFormattedDate()
       if (!parsedGamesData || shouldUpdate) {
         const res = await fetch(url);
         const formattedResponse = await res.json();
@@ -29,14 +26,28 @@ window.onload = () => {
         const allGamesData = await Promise.all(games.map(game => fetch(`${this.baseUrl}${game.link}`)));
         parsedGamesData = await Promise.all(allGamesData.map(res => res.json()));
 
-        const date = this.getFormattedDate()
         localStorage.setItem('all-games-array', JSON.stringify(parsedGamesData));
         localStorage.setItem('last-update', date);
       }
 
       const gamesList = parsedGamesData.map(game => this.renderGames(game));
       const wrapper = document.getElementById('scores__list')
-      wrapper.innerHTML = gamesList.join('');
+      wrapper.innerHTML = `
+      ${this.getUserFriendlyDate(date)}
+      ${gamesList.join('')}
+      `
+    }
+
+    getUserFriendlyDate (date) {
+      const dt = new Date(date);
+      Date.shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const shortMonth = Date.shortMonths[dt.getMonth()];
+      const formattedDate = dt.getDate();
+      return `
+        <li class='scores__list-item date-tile'>
+          <span>${shortMonth}</span>
+          <span>${formattedDate + 1}</span>
+      `
     }
 
     getUrl () {

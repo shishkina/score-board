@@ -5,7 +5,8 @@ body {
 #scores__list,
 .scores__list-item,
 .scores__status-state,
-.team-container {
+.team-container,
+.date-tile {
   display: flex;
 }
 
@@ -45,4 +46,11 @@ body {
 
 .team-abbr {
   margin: 0 10px;
+}
+
+.date-tile {
+  flex-direction: column;
+  justify-content: space-evenly;
+  font-weight: bold;
+  align-items: center;
 }
