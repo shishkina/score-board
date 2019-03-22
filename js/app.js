@@ -1,112 +1,63 @@
 window.onload = () => {
   console.log('loaded!');
 
-  class App {
-    constructor () {
-      this.date = this.getFormattedDate();
-      this.gamesData = [];
-      this.cardsArray = [];
-      this.shouldUpdateDate = false;
-      this.isLive = false;
-      this.shouldUpdateData = false;
+  class ScoreBoard {
+    constructor() {
+      this.baseUrl = 'http://statsapi.web.nhl.com';
     }
-    // set date to yesterday intially to see scores of past games, then reset if the date changes or if any game is live
-    getFormattedDate = () => {
+
+
+    renderGames (game) {
+      const widget = new Widget(game);
+      console.log(widget);
+      return widget.render();
+    }
+
+    async init () {
+      const url = this.getUrl();
+
+      const gamesData = localStorage.getItem('all-games-array');
+      let parsedGamesData = JSON.parse(gamesData);
+
+      const lastDataUpdate = localStorage.getItem('last-update');
+      const shouldUpdate = this.getFormattedDate() !== lastDataUpdate;
+
+      if (!parsedGamesData || shouldUpdate) {
+        const res = await fetch(url);
+        const formattedResponse = await res.json();
+        const games = formattedResponse.dates[0].games;
+        const allGamesData = await Promise.all(games.map(game => fetch(`${this.baseUrl}${game.link}`)));
+        parsedGamesData = await Promise.all(allGamesData.map(res => res.json()));
+
+        const date = this.getFormattedDate()
+        localStorage.setItem('all-games-array', JSON.stringify(parsedGamesData));
+        localStorage.setItem('last-update', date);
+      }
+
+      const gamesList = parsedGamesData.map(game => this.renderGames(game));
+      const wrapper = document.getElementById('scores__list')
+      wrapper.innerHTML = gamesList.join('');
+    }
+
+    getUrl () {
+      const date = this.getFormattedDate();
+      return `${this.baseUrl}/api/v1/schedule?date=${date}`;
+    }
+
+    getFormattedDate () {
       const today = new Date();
-      const dd = this.formatDate(today.getDate()) - 1;
+      const dd = this.formatDayOrMonth(today.getDate());
       const month = today.getMonth() + 1;
-      const mm = this.formatDate(month);
+      const mm = this.formatDayOrMonth(month);
       const yyyy = today.getFullYear();
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    formatDate = (dayOrMonth) => {
+    formatDayOrMonth (dayOrMonth) {
       return dayOrMonth < 10 ? ('0' + dayOrMonth) : dayOrMonth;
     }
-
-    getHours = () => {
-      const date = new Date();
-      return date.getHours();
-    }
-
-    getIsLive = () => {
-      const hours = this.getHours();
-      this.isLive = hours >= 7 && this.cardsArray.some(game => game.status === 'Live');
-    }
-
-    getShouldUpdateDate = () => {
-      console.log('running', this.shouldUpdateDate, this.shouldUpdateData);
-      const hours = this.getHours()
-      if (hours === 0) this.shouldUpdateDate = true
-    }
-
-    getShouldUpdateData = () => {
-      this.getIsLive();
-      if (this.shouldUpdateDate || this.isLive) this.shouldUpdateData = true;
-    }
-
-    updateDate = () => {
-      this.getShouldUpdateDate();
-      if(this.shouldUpdateDate){
-        this.date = this.getFormattedDate();
-      }
-    }
-
-    updateData = () => {
-      this.getShouldUpdateData();
-      if(this.shouldUpdateData || !localStorage.getItem('scores-array')) {
-        this.getData();
-      }
-    }
-
-    getInitialData = () => {
-    const scoresArray = localStorage.getItem('scores-array')
-    const storageData = JSON.parse(scoresArray)
-
-      if (!storageData) {
-        this.getData()
-          .then(response => { response.json()
-            .then(json => {
-              console.log(json);
-              this.gamesData = json.dates[0].games;
-              this.makeScoreCards();
-              localStorage.setItem('scores-array', JSON.stringify(json.dates[0].games));
-            })
-        });
-      }
-      this.gamesData = storageData;
-      this.cardsArray = this.makeScoreCards();
-    }
-
-    getData = async () => {
-      const url = `${baseUrl}/api/v1/schedule?date=${this.date}`;
-      console.log(url, 'this is url');
-      return await fetch(url)
-    }
-
-    makeScoreCards = () => {
-      return this.gamesData && this.gamesData.map(game => {
-        const card = new ScoreCard(game);
-        return card
-      });
-    }
-
-    renderScoreCards = () => {
-      const container = document.getElementById('scores__wrapper')
-      const ul = document.createElement('ul');
-      ul.className = 'scores__list';
-      container.appendChild(ul)
-      this.cardsArray.map(card => {
-        const el = card.createCardElement()
-        ul.appendChild(el)
-      })
-    }
   }
-  const app = new App();
-  app.getInitialData();
-  app.renderScoreCards();
-  setInterval(() => {
-    app.updateDate();
-    app.updateData();
-  }, 3000);
+
+  const board = new ScoreBoard();
+  setInterval(board.init(), 1000 * 60 * 60);
 }

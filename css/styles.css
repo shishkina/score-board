@@ -1,61 +1,48 @@
-#scores__wrapper {
-  box-sizing: border-box;
+body {
   font-family: Sintony,Arial,sans-serif;
-  position: relative;
-  user-select: none;
-  width: 100%;
 }
 
-.scores__list {
-  display flex;
-  justify-content: space-around;
-  overflow-y: hidden;
-  overflow-x: scroll;
+#scores__list,
+.scores__list-item,
+.scores__status-state,
+.team-container {
   display: flex;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+}
+
+.scores__wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#scores__list {
+  justify-content: space-around;
 }
 
 .scores__list-item {
-  border-right: 1px solid #d2d2d2;
-  box-sizing: border-box;
-  display: inline-block;
-  max-width: 190px;
-  min-width: 190px;
-  margin: 0;
-  padding: 0;
+  flex-direction: row;
+  min-width: 153px;
+  padding: 0 13px;
+  justify-content: space-between;
+  border-right: 1px solid grey;
 }
 
 .scores__panel {
-  display: inline;
-  height: 100%;
-  border-bottom-width: 4px;
-  border-right-width: 0;
-  padding-top: 24px;
-  padding-bottom: 8px;
-  padding-left: 20px;
-  padding-right: 20px;
+  flex-direction: column;
 }
 
-.team-name, .team-score {
-  width: 50%;
-  display: inline;
-  margin: 5px;
-}
-
-.team-name {
-  width: 65px;
-  display: inline-block;
-  vertical-align: middle;
-  font-weight: 700;
+.team-container {
+  flex-direction: row;
+  margin-bottom: 12px;
 }
 
 .scores__status-state {
-  vertical-align: middle;
-  display: inline;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-transform: uppercase;
-  height: 100%;
-  margin: 0 0 8px;
-  box-sizing: inherit;
+}
+
+.team-abbr {
+  margin: 0 10px;
 }

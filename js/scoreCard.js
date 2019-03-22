@@ -1,109 +1,78 @@
-class ScoreCard {
+class Widget {
   constructor(game) {
-    const { teams } = game;
-    this.status = game.status.abstractGameState;
-    this.gameLink = game.link;
-    this.teamsData = {};
-    this.setTeamData(teams);
+    const {
+      gamePk: id,
+      link,
+      gameData: {
+        status: { abstractGameState },
+        datetime: { dateTime },
+      },
+      liveData: {
+        linescore: {
+          teams,
+          currentPeriodTimeRemaining,
+          currentPeriodOrdinal,
+        },
+      }
+    } = game;
+
+    this.status = abstractGameState;
+    this.teams = teams;
+    this.id = id;
+    this.link = `${baseUrl}${link}`
+    this.timeRemaining = currentPeriodTimeRemaining;
+    this.period = currentPeriodOrdinal;
+    this.startDateTime = dateTime;
   }
 
-  checkStatus = () => {
-    if (this.status === 'Live') setInterval(this.checkUpdateScore, 3000);
+  async updateWidgetData () {
+    const node = document.getElementById(this.id);
+    const updatedGameData = await this.getUpdatedGameData()
+    const updatedWidget = new Widget(updatedGameData)
+
+    node.parentNode.replaceChild(node, updatedWidget.render());
   }
 
-  checkUpdateScore = () => {
-    fetch(`${baseUrl}${this.gameLink}`)
-    .then(res => res.json())
-      .then(gamesData => {
-        const keys = Object.keys(this.teamsData);
-        keys.forEach(team => {
-          if (gamesData.liveData.linescore.teams[team].goals !== this.teamsData[team].score) {
-            this.teamsData[team].score = gamesData.liveData.linescore.teams[team].goals
-            this.renderUpdateScore(this.teamsData[team].id, this.teamsData[team].score);
-          }
-        })
-      });
+  async getUpdatedGameData () {
+    const res = await fetch(this.link);
+    return await res.json();
   }
 
-  renderUpdateScore = (id, score) => {
-    console.log(document.getElementById(id));
-    document.getElementById(id).innerHTML = score;
+  getTeamScoreTempate (team) {
+    return `
+     <div class="team-container">
+        <img src="https://via.placeholder.com/20.png/" class="team-logo"/>
+        <div class="team-abbr">${team.team.abbreviation}</div>
+        ${this.status !== 'Preview' ? `<div class="team-score">${team.goals}</div>` : ''}
+     </div>
+     `
   }
 
-
-
-  setTeamData = (teams) => {
-    const cardTeams = Object.keys(teams);
-
-    cardTeams.forEach(team => {
-      console.log(teams[team]);
-    // const name = this.getTeamShortName(teams[team].team.link)
-    this.teamsData[team] = {
-      id: teams[team].team.id,
-      score: teams[team].score,
-      name: teams[team].team.name,
-      link: teams[team].team.link,
-
-    }
-      // return {
-      //   team,
-      //   score: teams[team].score,
-      //   name: teams[team].team.name
-      // }
-    })
-    //this.getTeamShortName(teamData.team.link).then(res => {
-    //   console.log(res, 'res!!');
-      // this[team].name = teamData.team.name;
-
-    //})
+  getGameStatus() {
+    return `
+      <div class="scores__status-state">
+        ${
+          this.status === 'Live' ? `
+          <span class="period">${this.period}</span>
+          <span class="time-remaining">${this.timeRemaining}</span>
+          `
+          : `<span>${this.status}</span>`
+        }
+      </div>
+    `;
   }
 
-  // not resolving
-  getTeamShortName = (link) => {
-    const abbreviation = fetch(`${baseUrl}${link}`).then(response => {
-        response.json()
-        .then(teamData => {
-          console.log(teamData.teams[0].abbreviation);
-          return teamData.teams[0].abbreviation
-        })
-      });
-      console.log(abbreviation);
-    return abbreviation
-  }
-  createStatus = () => {
-    const div = document.createElement('div');
-    div.className = 'scores__status-state';
-    div.innerHTML = this.status;
-    return div;
-  }
+  render () {
+    const homeTeamContainer = this.getTeamScoreTempate(this.teams.home);
+    const awayTeamContainer = this.getTeamScoreTempate(this.teams.away);
 
-  createScoresBlock = (team) => {
-    const logo = document.createElement('img');
-    logo.setAttribute('src', 'https://via.placeholder.com/20.png/')
-    const div = document.createElement('div');
-    div.className = 'scores__panel';
-    const name = document.createElement('div');
-    name.className = 'team-name'
-    name.innerHTML = team.name;
-    name.prepend(logo);
-
-    const score = document.createElement('div');
-    score.className = 'team-score'
-    score.setAttribute('id', team.id)
-    score.innerHTML = team.score
-    div.appendChild(name);
-    div.appendChild(score);
-    return div;
-  }
-
-  createCardElement = () => {
-    const li = document.createElement('li');
-    li.className = 'scores__list-item';
-    const keys = Object.keys(this.teamsData);
-    keys.forEach(team => {
-      li.appendChild(this.createScoresBlock(this.teamsData[team]));
-    })
-    li.appendChild(this.createStatus());
-    return li;
+    return `
+      <li class="scores__list-item" id=${this.id}>
+        <div class="scores__panel">
+          ${[homeTeamContainer, awayTeamContainer].join('')}
+        </div>
+        ${this.getGameStatus()}
+      </li>
+    `;
   }
 }
