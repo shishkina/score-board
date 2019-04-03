@@ -1,5 +1,6 @@
 class Widget {
   constructor(game) {
+    this.baseUrl = 'http://statsapi.web.nhl.com';
     const {
       gamePk: id,
       link,
@@ -22,7 +23,7 @@ class Widget {
     this.status = abstractGameState;
     this.teams = teams;
     this.id = id;
-    this.link = `${baseUrl}${link}`
+    this.link = `${this.baseUrl}${link}`
     this.timeRemaining = currentPeriodTimeRemaining;
     this.period = currentPeriodOrdinal;
     this.startDateTime = dateTime;
